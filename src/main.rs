@@ -1,6 +1,6 @@
 mod vec3;
-pub mod color;
-
+mod color;
+use crate::color::write_color;
 use std::io::Write;
 use ansi_term::{Style, Color::{Red, Green, Blue, Yellow, Purple, Cyan, White, Black}};
 use std::fs::File;
@@ -8,6 +8,30 @@ use env_logger;
 use chrono_tz::America::Chicago;
 use log::info;
 fn main() {
+    initialize_logger();
+    let image_width: u16 = 256;
+    let image_height: u16 = 256;
+    let mut file  = File::create("image.ppm").expect("error creating file");
+    let str = format!("P3\n{} {}\n255\n", image_width,image_height);
+    file.write(str.as_bytes()).expect("failed write");
+
+    for x in 0..image_height {
+        info!("Scan lines remaining: {image_height}", image_height = image_height - x);
+        for y in 0..image_width {
+            let r = (y as f64) / (image_width) as f64;
+            let g = (x as f64) / (image_height) as f64;
+            let b = 0 as f64;
+
+            let pixel_color = vec3::Vec3 { x: r, y: g, z: b };
+            write_color(&mut file, pixel_color);
+        }
+
+
+    }    
+    info!("Done!");
+}
+
+fn initialize_logger () {
     env_logger::Builder::new().format(
         |buf, record| {
             let level = record.level();
@@ -26,26 +50,4 @@ fn main() {
     )
     .filter(None, log::LevelFilter::Trace)
     .init();
-    let image_width: u16 = 256;
-    let image_height: u16 = 256;
-    let mut file  = File::create("image.ppm").expect("error creating file");
-    let mut str = format!("P3\n{} {}\n255\n", image_width,image_height);
-    file.write(str.as_bytes()).expect("failed write");
-
-    for x in 0..image_height {
-        info!("Scan lines remaining: {image_height}", image_height = image_height - x);
-        for y in 0..image_width {
-            let r = (y as f32) / (image_width) as f32;
-            let g = (x as f32) / (image_height) as f32;
-            let b = 0 as f32;
-
-            let ir  =  (r * 255.999) as u8;
-            let ig  = (g * 255.999) as u8;
-            let ib = (b * 255.999) as u8;
-
-            str = format!("{} {} {}\n", ir,ig,ib);
-            file.write(str.as_bytes()).expect("failed write");
-        }
-    }
-    info!("Done!");
 }
