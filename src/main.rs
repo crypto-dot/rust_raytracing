@@ -1,3 +1,6 @@
+mod vec3;
+pub mod color;
+
 use std::io::Write;
 use ansi_term::{Style, Color::{Red, Green, Blue, Yellow, Purple, Cyan, White, Black}};
 use std::fs::File;
